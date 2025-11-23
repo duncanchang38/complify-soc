@@ -1,0 +1,27 @@
+{
+  "timeZone": "Asia/Taipei",
+  "dependencies": {},
+  "exceptionLogging": "STACKDRIVER",
+  "runtimeVersion": "V8",
+  "oauthScopes": [
+    "https://www.googleapis.com/auth/script.external_request",
+    "https://www.googleapis.com/auth/spreadsheets.currentonly",
+    "https://www.googleapis.com/auth/script.storage",
+    "https://www.googleapis.com/auth/script.container.ui"
+  ],
+  "addOns": {
+    "common": {
+      "name": "AIII Assistant",
+      "logoUrl": "https://www.gstatic.com/images/icons/material/system/1x/comment_white_24dp.png",
+      "layoutProperties": {
+        "primaryColor": "#4285F4",
+        "secondaryColor": "#2196F3"
+      }
+    },
+    "sheets": {
+      "onFileScopeGrantedTrigger": {
+        "runFunction": "onOpen"
+      }
+    }
+  }
+}
