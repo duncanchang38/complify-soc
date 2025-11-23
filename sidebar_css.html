@@ -1,0 +1,50 @@
+<style>
+  /* --- General Styling --- */
+  body { 
+    padding: 0.5rem; 
+    background-color: #f8f9fa; /* A slightly off-white background */
+  }
+  .hidden { 
+    display: none; 
+  }
+
+  /* --- The Flexbox Container --- */
+  /* This is the key to layout! */
+  .flex-container {
+    display: flex;
+    flex-direction: column; /* Stacks items vertically */
+    gap: 1rem; /* This magically adds a 1rem margin between ALL items */
+    padding: 1rem;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    background-color: white;
+  }
+
+  /* --- Component Tweaks --- */
+  .flex-container > h4 {
+    margin-bottom: 0; /* The gap property handles spacing below the title */
+  }
+  .loading {
+    margin-top: 0.5rem; 
+  }
+  #ai_response_block {
+    padding: 1rem;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+  }
+  #ai_response_block footer {
+    display: flex;
+    gap: 0.5rem; /* Adds space between the confirm/cancel buttons */
+    margin-top: 1rem;
+  }
+
+  .button-green {
+    background-color: #285430; 
+    border-color: #285430;
+    color: white; 
+  }
+  .button-green:hover {
+    background-color: #1a3a20;
+    border-color: #1a3a20;
+  }
+</style>
