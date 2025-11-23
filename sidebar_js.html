@@ -1,0 +1,154 @@
+<script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+<script>
+  // A global variable to hold the AI's response between steps
+  let currentAnswer = '';
+
+  /**
+   * Run initializations on sidebar load.
+   */
+  $(function() {
+    // --- Assign handler functions to all interactive elements ---
+    $('#sidebar_ask_button').on('click', onAskAi);
+    $('#sidebar_ai_response_confirm_button').on('click', onConfirm);
+    $('#sidebar_ai_response_cancel_button').on('click', onCancel);
+    $('#refresh_range_button').on('click', updateRangeFromSheet);
+
+    // Get selected range in sheet upon load
+    updateRangeFromSheet();
+
+    // Ensure the UI is in its initial state on load
+    resetUi();
+  });
+
+  /**
+   * 1. Called when the "Ask" button is clicked.
+   * Shows a loader and calls the server to get an AI answer.
+   */
+  function onAskAi() {
+    const question = $('#question').val();
+    if (!question.trim()) {
+      showStatus("Please enter a prompt.", "error");
+      return;
+    }
+
+    setLoadingState(true); // Show loader, disable button
+    
+    google.script.run
+      .withSuccessHandler(handleAiSuccess)
+      .withFailureHandler(handleFailure)
+      .getKnowledgeBaseAnswer(question, $('#cell').val());
+  }
+
+  /**
+   * 2. Handles a successful response from the AI.
+   * Displays the answer and shows the Confirm/Cancel buttons.
+   * @param {string} answer The text returned from the server's getOpenAiAnswer function.
+   */
+  function handleAiSuccess(answer) {
+    setLoadingState(false); // Hide loader
+    currentAnswer = answer; // Store the answer for later use
+
+    $('#ai_response').text(answer);
+    $('#ai_response_block').removeClass('hidden'); // Show the response card
+    $('#ask_container').addClass('hidden');       // Hide the original "Ask" button/loader
+  }
+
+  /**
+   * 3. Called when the "Confirm" button is clicked.
+   * Sends the stored answer to the server to be written to the sheet.
+   */
+  function onConfirm() {
+    $('#sidebar_ai_response_confirm_button').prop('disabled', true);
+    $('#sidebar_ai_response_cancel_button').prop('disabled', true);
+    showStatus("Writing to sheet...", "success");
+
+    google.script.run
+      .withSuccessHandler(function(message) {
+        showStatus(message, "success");
+        setTimeout(resetUi, 2000); // Reset UI after 2 seconds
+      })
+      .withFailureHandler(handleFailure)
+      .writeAnswerToSheet(currentAnswer, $('#cell').val()); // YOU NEED TO CREATE THIS FUNCTION IN Code.gs
+  }
+
+  /**
+   * 4. Called when the "Cancel" button is clicked.
+   * Resets the UI to its initial state.
+   */
+  function onCancel() {
+    resetUi();
+  }
+
+  /**
+   * Handles any failed call to the server.
+   * @param {Error} error The error object from Apps Script.
+   */
+  function handleFailure(error) {
+    setLoadingState(false);
+    showStatus(error.message, 'error');
+  }
+
+  // --- UI Helper Functions ---
+
+  /**
+   * Manages the UI state when waiting for the server.
+   * @param {boolean} isLoading True to show loader, false to hide.
+   */
+  function setLoadingState(isLoading) {
+    showStatus(""); // Clear any previous status messages
+    $('#sidebar_ask_button').prop('disabled', isLoading);
+    
+    if (isLoading) {
+      $('#loader').removeClass('hidden');
+    } else {
+      $('#loader').addClass('hidden');
+    }
+  }
+
+  /**
+   * Resets the entire sidebar to its starting state.
+   */
+  function resetUi() {
+    $('#ai_response_block').addClass('hidden');
+    $('#ask_container').removeClass('hidden');
+    $('#sidebar_ai_response_confirm_button').prop('disabled', false);
+    $('#sidebar_ai_response_cancel_button').prop('disabled', false);
+    currentAnswer = '';
+  }
+
+  /**
+   * Displays a status message in the sidebar.
+   * @param {String} msg The status message to display.
+   * @param {String} type The message type ('error' or 'success').
+   */
+  function showStatus(msg, type) {
+    const statusDiv = $('#status');
+    statusDiv.text(msg).removeClass('text-error text-success'); // Clear existing classes
+    if (type === 'error') {
+      statusDiv.addClass('text-error');
+    } else if (type === 'success') {
+      statusDiv.addClass('text-success');
+    }
+  }
+
+    /**
+   * Calls the server to get the currently selected range
+   * and updates the input box with it.
+   */
+  function updateRangeFromSheet() {
+    // Optionally show a temporary "loading" state
+    $('#cell').val('...'); 
+    
+    google.script.run
+      .withSuccessHandler(function(rangeA1Notation) {
+        // This function runs when the server returns the range
+        $('#cell').val(rangeA1Notation);
+      })
+      .withFailureHandler(function(error) {
+        // If it fails, show an error and a default value
+        $('#cell').val('A1');
+        showStatus(error.message, 'error');
+      })
+      .getActiveRangeA1Notation(); // Call the new function in Code.gs
+  }
+</script>
